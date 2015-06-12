@@ -24,6 +24,8 @@ Once constructed, the object is registered by utilizing the `ddj.hookr.addHook` 
 
 ## Example
 
+### Simple code example
+
 ```javascript
 var initialState = 1;
 var myHook = {
@@ -46,3 +48,7 @@ ddj.hookr.setState(initialState);
 ```
 
 According to the example above, the script will wait (event-driven) for a page that has _/profile/_ in its URL. If that's the case, the state will be compared. In this case the state stays the same and matches the one for the hook, so nothing interesting is happening here. Then the script finds the matching delete button on the page. When the button is found, a final check is done, by verifying whether or not the _uid_ query in the url matches the given user id. If the check succeeds, the button's click event is triggered, deleting the user's profile picture. A confirmation is also logged in the console for debugging purposes.
+
+### Example projects
+
+- [Mjölnir](https://github.com/dennisdegryse/ddj-mjolnir): A userscript for managing the International PHP Facebook group.
