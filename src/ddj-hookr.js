@@ -6,10 +6,17 @@ ddj.hookr = {
         state : "",
         isInvalid : false,
         tree : {},
+        isLocked : false,
         queryParams : {},
         setState : function (state) {
             var self = ddj.hookr._internal;
             var serializedState = self.serializeState(state)
+            
+            if (self.isLocked) {
+                self.isInvalid = true;
+                
+                throw 'HookR - invalid state: Cannot change the state during the execution of a handler. Return the new state from the handler instead.';
+            }
             
             if (serializedState != self.state) {
                 self.state = serializedState;
@@ -21,11 +28,14 @@ ddj.hookr = {
             var urlPattern, urlRegex, selector, context, i;
             var matchHandler = function () {
                 var match = $(this);
+                var newState;
                 
                 if (!match.data(self.scrapedFlag)) {
                     try {
                         if (context[selector].condition(match, self.queryParams) === true) {
-                            var newState = context[selector].handler(match, self.queryParams) || null;
+                            self.isLocked = true;
+                            newState = context[selector].handler(match, self.queryParams) || null;
+                            self.isLocked = false;
                             
                             if (newState !== null) {
                                 self.setState(newState);
