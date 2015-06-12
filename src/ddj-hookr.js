@@ -94,7 +94,7 @@ ddj.hookr = {
             state : false,
             selector : '*',
             condition : function (match, queryParams) { return true; },
-            handler : function (match, queryParams) { return true; }
+            handler : function (match, queryParams) { }
         };
         
         $.extend(true, params, hook);
