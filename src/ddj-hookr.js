@@ -36,7 +36,7 @@ ddj.hookr = {
                     } catch (err) {
                         self.isInvalid = true;
                         
-                        throw 'DDJ Hooks - invalid state: ' + err;
+                        throw 'HookR - invalid state: ' + err;
                     }
                 }
             };
@@ -73,7 +73,9 @@ ddj.hookr = {
         },
         serializeState : function (state) {
             if (state === null) {
-                throw 'DDJ Hooks - invalid state: null is not a valid state';
+                ddj.hookr._internal.isInvalid = true;
+                
+                throw 'HookR - invalid state: null is not a valid state';
             }
             
             if (typeof state !== 'object') {
