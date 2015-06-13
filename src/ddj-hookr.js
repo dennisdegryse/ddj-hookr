@@ -28,33 +28,28 @@ ddj.hookr = {
             var urlPattern, urlRegex, selector, context, i;
             var matchHandler = function () {
                 var match = $(this);
-                var newState, hook, i;
+                var newState;
                 
-                    
                 if (!match.data(self.scrapedFlag)) {
                     self.isLocked = true;
                     
-                    for (i in context[selector]) {
-                        hook = context[selector][i];
-                        
-                        try {
-                            if (hook.condition(match, self.queryParams) === true) {
+                    try {
+                        $.each(context[selector], function (i, hook) {
+                            if (typeof hook == 'object' && hook.condition(match, self.queryParams) === true) {
                                 newState = hook.handler(match, self.queryParams) || null;
-                                
-                                if (newState !== null) {
-                                    break;
-                                }
                             }
                             
-                            match.data(self.scrapedFlag, true);
-                        } catch (err) {
-                            self.isInvalid = true;
-                            
-                            throw 'HookR - invalid state: ' + err;
-                        }
+                            return (newState == null);
+                        });
+                    } catch (err) {
+                        self.isInvalid = true;
+                        
+                        throw 'HookR - invalid state: ' + err;
                     }
                     
                     self.isLocked = false;
+                    
+                    match.data(self.scrapedFlag, true);
                     
                     if (newState !== null) {
                         self.setState(newState);
