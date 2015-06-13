@@ -28,25 +28,36 @@ ddj.hookr = {
             var urlPattern, urlRegex, selector, context, i;
             var matchHandler = function () {
                 var match = $(this);
-                var newState;
+                var newState, hook, i;
                 
+                    
                 if (!match.data(self.scrapedFlag)) {
-                    try {
-                        if (context[selector].condition(match, self.queryParams) === true) {
-                            self.isLocked = true;
-                            newState = context[selector].handler(match, self.queryParams) || null;
-                            self.isLocked = false;
-                            
-                            if (newState !== null) {
-                                self.setState(newState);
+                    self.isLocked = true;
+                    
+                    for (i in context[selector]) {
+                        hook = context[selector][i];
+                        
+                        try {
+                            if (hook.condition(match, self.queryParams) === true) {
+                                newState = hook.handler(match, self.queryParams) || null;
+                                
+                                if (newState !== null) {
+                                    break;
+                                }
                             }
+                            
+                            match.data(self.scrapedFlag, true);
+                        } catch (err) {
+                            self.isInvalid = true;
+                            
+                            throw 'HookR - invalid state: ' + err;
                         }
-                        
-                        match.data(self.scrapedFlag, true);
-                    } catch (err) {
-                        self.isInvalid = true;
-                        
-                        throw 'HookR - invalid state: ' + err;
+                    }
+                    
+                    self.isLocked = false;
+                    
+                    if (newState !== null) {
+                        self.setState(newState);
                     }
                 }
             };
@@ -60,7 +71,11 @@ ddj.hookr = {
     
                         if (context) {
                             for (selector in context) {
-                                $(selector).each(matchHandler);
+                                if (selector != null) {
+                                    $(selector).each(matchHandler);
+                                } else {
+                                    matchHandler();
+                                }
                             }
                         }
                     }
@@ -104,7 +119,7 @@ ddj.hookr = {
         var params = {
             urlPattern : '.*',
             state : false,
-            selector : '*',
+            selector : null,
             condition : function (match, queryParams) { return true; },
             handler : function (match, queryParams) { }
         };
@@ -114,7 +129,7 @@ ddj.hookr = {
         
         path[params.urlPattern] = {};
         path[params.urlPattern][serializedState] = {};
-        path[params.urlPattern][serializedState][params.selector] = params;
+        path[params.urlPattern][serializedState][params.selector] = [ params ];
         
         $.extend(true, self.tree, path);
         
