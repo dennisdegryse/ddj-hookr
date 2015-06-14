@@ -2,7 +2,7 @@ var ddj = (ddj === undefined) ? {} : ddj;
 
 ddj.hookr = {
     _internal : {
-        scrapedFlag : '_ddj_hooks_scraped',
+        scrapedFlagPrefix : '_ddj_hookr_scraped_',
         state : "",
         isInvalid : false,
         tree : {},
@@ -30,30 +30,31 @@ ddj.hookr = {
                 var match = $(this);
                 var newState;
                 
-                if (!match.data(self.scrapedFlag)) {
-                    self.isLocked = true;
-                    
-                    try {
-                        $.each(context[selector], function (i, hook) {
+                self.isLocked = true;
+                
+                try {
+                    $.each(context[selector], function (i, hook) {
+                        var scrapedFlag = self.scrapedFlagPrefix + hook.name;
+                        
+                        if (!match.data(scrapedFlag)) {
                             if (typeof hook == 'object' && hook.condition(match, self.queryParams) === true) {
                                 newState = hook.handler(match, self.queryParams) || null;
+                    
+                                match.data(scrapedFlag, true);
                             }
-                            
-                            return (newState == null);
-                        });
-                    } catch (err) {
-                        self.isInvalid = true;
-                        
-                        throw 'HookR - invalid state: ' + err;
-                    }
+                        }
+                        return (newState == null);
+                    });
+                } catch (err) {
+                    self.isInvalid = true;
                     
-                    self.isLocked = false;
-                    
-                    match.data(self.scrapedFlag, true);
-                    
-                    if (newState !== null) {
-                        self.setState(newState);
-                    }
+                    throw 'HookR - invalid state: ' + err;
+                }
+                
+                self.isLocked = false;
+                
+                if (newState !== null) {
+                    self.setState(newState);
                 }
             };
             
@@ -112,6 +113,7 @@ ddj.hookr = {
         var path = {};
         var serializedState;
         var params = {
+            name : null,
             urlPattern : '.*',
             state : false,
             selector : null,
